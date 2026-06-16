@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi Production</title>
+    <!-- Lien vers le fichier de configuration mobile -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0056b3">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 15px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        h1 { color: #0056b3; font-size: 22px; text-align: center; margin-top: 0; }
+        h2 { color: #333; font-size: 18px; margin-top: 25px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #444; }
+        input, select, textarea {
+            width: 100%; padding: 12px; border: 1px solid #ccc;
+            border-radius: 6px; box-sizing: border-box; font-size: 16px;
+        }
+        button {
+            width: 100%; background-color: #0056b3; color: white; padding: 14px;
+            border: none; border-radius: 6px; font-size: 16px; font-weight: bold;
+            cursor: pointer; transition: background 0.2s;
+        }
+        button:hover { background-color: #004494; }
+        .table-container { overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
+        th { background-color: #f8f9fa; color: #555; }
+        .badge {
+            padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;
+        }
+        .badge-non-conforme { background-color: #ffe3e3; color: #dc3545; }
+        .badge-instance { background-color: #fff3cd; color: #856404; }
+        .badge-probleme { background-color: #e2e3e5; color: #383d41; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Qualité & Suivi Bobines</h1>
+        
+        <div class="form-group">
+            <label for="numeroBobine">N° de Bobine :</label>
+            <input type="text" id="numeroBobine" placeholder="Ex: BOB-2026-A">
+        </div>
+
+        <div class="form-group">
+            <label for="statut">Statut :</label>
+            <select id="statut">
+                <option value="Non conforme">Non conforme</option>
+                <option value="En instance">En instance</option>
+                <option value="Problème ligne">Problème ligne</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description :</label>
+            <textarea id="description" rows="3" placeholder="Détails de l'anomalie..."></textarea>
+        </div>
+
+        <button onclick="ajouterAnomalie()">Enregistrer sur l'appareil</button>
+
+        <h2>Anomalies Enregistrées</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Bobine</th>
+                        <th>Statut</th>
+                        <th>Détails</th>
+                    </tr>
+                </thead>
+                <tbody id="tableauAnomalies"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Charger les données sauvegardées au démarrage
+        document.addEventListener("DOMContentLoaded", chargerDonnees);
+
+        function ajouterAnomalie() {
+            let numero = document.getElementById('numeroBobine').value.trim();
+            let statut = document.getElementById('statut').value;
+            let description = document.getElementById('description').value.trim();
+            let dateJour = new Date().toLocaleDateString('fr-FR');
+
+            if (numero === "") {
+                alert("Le numéro de bobine est obligatoire.");
+                return;
+            }
+
+            let anomalie = { date: dateJour, numero: numero, statut: statut, desc: description };
+
+            // Récupérer la liste existante ou en créer une neuve
+            let liste = JSON.parse(localStorage.getItem("anomalies")) || [];
+            liste.unshift(anomalie); // Ajouter au début du tableau
+
+            // Sauvegarder dans la mémoire du téléphone
+            localStorage.setItem("anomalies", JSON.stringify(liste));
+
+            // Rafraîchir l'affichage et vider les champs
+            afficherDonnees(liste);
+            document.getElementById('numeroBobine').value = "";
+            document.getElementById('description').value = "";
+        }
+
+        function chargerDonnees() {
+            let liste = JSON.parse(localStorage.getItem("anomalies")) || [];
+            afficherDonnees(liste);
+        }
+
+        function afficherDonnees(liste) {
+            let tbody = document.getElementById('tableauAnomalies');
+            tbody.innerHTML = "";
+
+            liste.forEach(item => {
+                let badgeClass = "badge-probleme";
+                if(item.statut === "Non conforme") badgeClass = "badge-non-conforme";
+                if(item.statut === "En instance") badgeClass = "badge-instance";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td><strong>${item.numero}</strong></td>
+                        <td><span class="badge ${badgeClass}">${item.statut}</span></td>
+                        <td>${item.desc}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Enregistrement du Service Worker pour l'installation mobile
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+            .then(() => console.log("Service Worker prêt !"))
+            .catch(err => console.log("Erreur SW :", err));
+        }
+    </script>
+</body>
+</html>
