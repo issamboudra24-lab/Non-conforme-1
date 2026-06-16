@@ -4,85 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suivi Production</title>
-    <!-- Lien vers le fichier de configuration mobile -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0056b3">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f6f9;
-            margin: 0;
-            padding: 15px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
+        body { font-family: -apple-system, sans-serif; background-color: #f4f6f9; margin: 0; padding: 15px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         h1 { color: #0056b3; font-size: 22px; text-align: center; margin-top: 0; }
-        h2 { color: #333; font-size: 18px; margin-top: 25px; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; color: #444; }
-        input, select, textarea {
-            width: 100%; padding: 12px; border: 1px solid #ccc;
-            border-radius: 6px; box-sizing: border-box; font-size: 16px;
-        }
-        button {
-            width: 100%; background-color: #0056b3; color: white; padding: 14px;
-            border: none; border-radius: 6px; font-size: 16px; font-weight: bold;
-            cursor: pointer; transition: background 0.2s;
-        }
-        button:hover { background-color: #004494; }
-        .table-container { overflow-x: auto; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
-        th { background-color: #f8f9fa; color: #555; }
-        .badge {
-            padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;
-        }
-        .badge-non-conforme { background-color: #ffe3e3; color: #dc3545; }
-        .badge-instance { background-color: #fff3cd; color: #856404; }
-        .badge-probleme { background-color: #e2e3e5; color: #383d41; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #444; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        .btn-primary { background-color: #0056b3; color: white; padding: 12px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px; }
+        .btn-success { background-color: #28a745; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold;}
+        .btn-danger { background-color: #dc3545; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 15px; }
+        th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
+        th { background-color: #f8f9fa; }
+        .table-container { overflow-x: auto; }
+        .photo-preview { max-width: 60px; max-height: 60px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Qualité & Suivi Bobines</h1>
+        <h1>Suivi des Bobines</h1>
         
         <div class="form-group">
-            <label for="numeroBobine">N° de Bobine :</label>
+            <label>Date :</label>
+            <input type="date" id="dateSaisie">
+        </div>
+
+        <div class="form-group">
+            <label>N° de Bobine :</label>
             <input type="text" id="numeroBobine" placeholder="Ex: BOB-2026-A">
         </div>
 
         <div class="form-group">
-            <label for="statut">Statut :</label>
-            <select id="statut">
-                <option value="Non conforme">Non conforme</option>
-                <option value="En instance">En instance</option>
-                <option value="Problème ligne">Problème ligne</option>
-            </select>
+            <label>Poids (Kg) :</label>
+            <input type="number" id="poids" placeholder="Ex: 500">
         </div>
 
         <div class="form-group">
-            <label for="description">Description :</label>
-            <textarea id="description" rows="3" placeholder="Détails de l'anomalie..."></textarea>
+            <label>Problème :</label>
+            <input type="text" id="probleme" placeholder="Nature du problème...">
         </div>
 
-        <button onclick="ajouterAnomalie()">Enregistrer sur l'appareil</button>
+        <div class="form-group">
+            <label>Cause :</label>
+            <input type="text" id="cause" placeholder="Cause racine...">
+        </div>
 
-        <h2>Anomalies Enregistrées</h2>
+        <div class="form-group">
+            <label>Photo de la bobine :</label>
+            <input type="file" id="photo" accept="image/*" capture="environment">
+        </div>
+
+        <button class="btn-primary" onclick="traiterEtAjouter()">Enregistrer la bobine</button>
+
+        <button class="btn-success" onclick="telechargerExcel()">📥 Télécharger les données (Excel/CSV)</button>
+
+        <h2 style="font-size: 18px; margin-top: 30px;">Historique</h2>
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
                         <th>Date</th>
                         <th>Bobine</th>
-                        <th>Statut</th>
-                        <th>Détails</th>
+                        <th>Poids</th>
+                        <th>Problème</th>
+                        <th>Cause</th>
+                        <th>Photo</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="tableauAnomalies"></tbody>
@@ -91,65 +82,130 @@
     </div>
 
     <script>
-        // Charger les données sauvegardées au démarrage
+        // Mettre la date d'aujourd'hui par défaut
+        document.getElementById('dateSaisie').valueAsDate = new Date();
         document.addEventListener("DOMContentLoaded", chargerDonnees);
 
-        function ajouterAnomalie() {
+        function traiterEtAjouter() {
             let numero = document.getElementById('numeroBobine').value.trim();
-            let statut = document.getElementById('statut').value;
-            let description = document.getElementById('description').value.trim();
-            let dateJour = new Date().toLocaleDateString('fr-FR');
+            if (numero === "") { alert("Le numéro de bobine est obligatoire."); return; }
 
-            if (numero === "") {
-                alert("Le numéro de bobine est obligatoire.");
-                return;
+            let inputPhoto = document.getElementById('photo');
+            if (inputPhoto.files && inputPhoto.files[0]) {
+                // S'il y a une photo, on la compresse avant de sauvegarder
+                compresserImage(inputPhoto.files[0], function(photoBase64) {
+                    sauvegarder(photoBase64);
+                });
+            } else {
+                // Pas de photo
+                sauvegarder("");
             }
+        }
 
-            let anomalie = { date: dateJour, numero: numero, statut: statut, desc: description };
+        function sauvegarder(photoBase64) {
+            let donnee = {
+                date: document.getElementById('dateSaisie').value,
+                numero: document.getElementById('numeroBobine').value.trim(),
+                poids: document.getElementById('poids').value,
+                probleme: document.getElementById('probleme').value.trim(),
+                cause: document.getElementById('cause').value.trim(),
+                photo: photoBase64
+            };
 
-            // Récupérer la liste existante ou en créer une neuve
-            let liste = JSON.parse(localStorage.getItem("anomalies")) || [];
-            liste.unshift(anomalie); // Ajouter au début du tableau
+            let liste = JSON.parse(localStorage.getItem("anomalies_v2")) || [];
+            liste.unshift(donnee); // Ajouter au début
+            localStorage.setItem("anomalies_v2", JSON.stringify(liste));
 
-            // Sauvegarder dans la mémoire du téléphone
-            localStorage.setItem("anomalies", JSON.stringify(liste));
-
-            // Rafraîchir l'affichage et vider les champs
-            afficherDonnees(liste);
+            afficherDonnees();
+            
+            // Vider les champs sauf la date
             document.getElementById('numeroBobine').value = "";
-            document.getElementById('description').value = "";
+            document.getElementById('poids').value = "";
+            document.getElementById('probleme').value = "";
+            document.getElementById('cause').value = "";
+            document.getElementById('photo').value = "";
         }
 
-        function chargerDonnees() {
-            let liste = JSON.parse(localStorage.getItem("anomalies")) || [];
-            afficherDonnees(liste);
-        }
+        function chargerDonnees() { afficherDonnees(); }
 
-        function afficherDonnees(liste) {
+        function afficherDonnees() {
+            let liste = JSON.parse(localStorage.getItem("anomalies_v2")) || [];
             let tbody = document.getElementById('tableauAnomalies');
             tbody.innerHTML = "";
 
-            liste.forEach(item => {
-                let badgeClass = "badge-probleme";
-                if(item.statut === "Non conforme") badgeClass = "badge-non-conforme";
-                if(item.statut === "En instance") badgeClass = "badge-instance";
-
+            liste.forEach((item, index) => {
+                let imgHTML = item.photo ? `<img src="${item.photo}" class="photo-preview" alt="photo">` : "Pas de photo";
+                
                 tbody.innerHTML += `
                     <tr>
                         <td>${item.date}</td>
                         <td><strong>${item.numero}</strong></td>
-                        <td><span class="badge ${badgeClass}">${item.statut}</span></td>
-                        <td>${item.desc}</td>
+                        <td>${item.poids}</td>
+                        <td>${item.probleme}</td>
+                        <td>${item.cause}</td>
+                        <td>${imgHTML}</td>
+                        <td><button class="btn-danger" onclick="supprimer(${index})">Supprimer</button></td>
                     </tr>
                 `;
             });
         }
 
-        // Enregistrement du Service Worker pour l'installation mobile
+        function supprimer(index) {
+            if(confirm("Voulez-vous vraiment supprimer cette bobine ?")) {
+                let liste = JSON.parse(localStorage.getItem("anomalies_v2")) || [];
+                liste.splice(index, 1); // Retire l'élément
+                localStorage.setItem("anomalies_v2", JSON.stringify(liste));
+                afficherDonnees();
+            }
+        }
+
+        function telechargerExcel() {
+            let liste = JSON.parse(localStorage.getItem("anomalies_v2")) || [];
+            if(liste.length === 0) { alert("Aucune donnée à télécharger."); return; }
+
+            // \uFEFF aide Excel à bien lire les accents (UTF-8)
+            let csv = "\uFEFFDate;Bobine;Poids(Kg);Probleme;Cause\n"; 
+            
+            liste.forEach(item => {
+                // On remplace les points-virgules par des virgules pour ne pas casser le tableau Excel
+                let prob = (item.probleme || "").replace(/;/g, ",");
+                let cause = (item.cause || "").replace(/;/g, ",");
+                csv += `${item.date};${item.numero};${item.poids};${prob};${cause}\n`;
+            });
+
+            let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Suivi_Bobines.csv";
+            link.click(); // Déclenche le téléchargement
+        }
+
+        // Fonction technique pour réduire la taille de l'image
+        function compresserImage(file, callback) {
+            let reader = new FileReader();
+            reader.onload = function(event) {
+                let img = new Image();
+                img.onload = function() {
+                    let canvas = document.createElement('canvas');
+                    let ctx = canvas.getContext('2d');
+                    
+                    // On réduit la taille à 400 pixels de large maximum
+                    let maxWidth = 400; 
+                    let scaleSize = maxWidth / img.width;
+                    canvas.width = maxWidth;
+                    canvas.height = img.height * scaleSize;
+                    
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    // On compresse en JPEG qualité moyenne (0.7)
+                    callback(canvas.toDataURL('image/jpeg', 0.7)); 
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-            .then(() => console.log("Service Worker prêt !"))
-            .catch(err => console.log("Erreur SW :", err));
+            navigator.serviceWorker.register('sw.js');
         }
     </script>
 </body>
