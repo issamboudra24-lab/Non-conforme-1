@@ -1,0 +1,16 @@
+{
+  "name": "Gestion Anomalies Bobines",
+  "short_name": "SuiviBobines",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f4f6f9",
+  "theme-color": "#0056b3",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1541/1541419.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
